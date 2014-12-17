@@ -1,4 +1,4 @@
-```
+
 Примеры для сравнения производительности технологий
 *Examples for comparing the performance of technologies
 
