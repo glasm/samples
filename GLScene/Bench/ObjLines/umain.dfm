@@ -7,52 +7,52 @@ object Form1: TForm1
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -16
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 20
   object vp: TGLSceneViewer
     Left = 0
     Top = 0
     Width = 689
-    Height = 424
+    Height = 416
     Camera = cam
     Buffer.BackgroundColor = 7748106
     Buffer.ContextOptions = [roDoubleBuffer, roRenderToWindow]
     Buffer.AntiAliasing = aa6x
-    FieldOfView = 153.458709716796900000
+    FieldOfView = 152.966857910156300000
     Align = alClient
     OnMouseDown = vpMouseDown
     TabOrder = 0
   end
   object Panel1: TPanel
     Left = 0
-    Top = 424
+    Top = 416
     Width = 689
-    Height = 31
+    Height = 39
     Align = alBottom
     Color = 7748106
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Height = -13
+    Font.Name = 'Trebuchet MS'
     Font.Style = []
     ParentFont = False
     TabOrder = 1
     object Label1: TLabel
-      Left = 288
-      Top = 10
-      Width = 32
-      Height = 13
+      Left = 320
+      Top = 12
+      Width = 38
+      Height = 18
       Caption = 'Label1'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 8454143
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
+      Font.Height = -13
+      Font.Name = 'Trebuchet MS'
       Font.Style = []
       ParentFont = False
     end
@@ -68,8 +68,8 @@ object Form1: TForm1
       OnClick = RadioButton1Click
     end
     object RadioButton2: TRadioButton
-      Left = 80
-      Top = 8
+      Left = 88
+      Top = 16
       Width = 73
       Height = 17
       Caption = 'sample2'
@@ -77,7 +77,7 @@ object Form1: TForm1
       OnClick = RadioButton1Click
     end
     object RadioButton3: TRadioButton
-      Left = 144
+      Left = 160
       Top = 8
       Width = 73
       Height = 17
@@ -86,8 +86,8 @@ object Form1: TForm1
       OnClick = RadioButton1Click
     end
     object RadioButton4: TRadioButton
-      Left = 208
-      Top = 8
+      Left = 232
+      Top = 16
       Width = 73
       Height = 17
       Caption = 'sample4'

@@ -1,4 +1,4 @@
-program lines;
+program objlines;
 
 uses
   Forms,
