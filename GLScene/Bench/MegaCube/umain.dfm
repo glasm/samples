@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 341
-  Top = 541
+  Left = 265
+  Top = 133
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'glasm.ru / MegaCube'
@@ -690,19 +690,6 @@ object Form1: TForm1
             TextureScale.Coordinates = {F1F0703DF1F0703DF1F0703D00000000}
           end>
         Visible = False
-      end
-    end
-    object dogl: TGLDirectOpenGL
-      UseBuildList = False
-      OnRender = doglRender
-      Blend = False
-      object GLFreeForm: TGLFreeForm
-        Visible = False
-      end
-      object GLMesh: TGLMesh
-        Visible = False
-        Mode = mmQuads
-        VertexMode = vmVNT
       end
     end
   end

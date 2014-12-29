@@ -46,15 +46,15 @@ begin
   Material := aInstFF.Material;
   FGLSL := TGLProgramHandle.CreateAndAllocate;
   FGLSL.AddShader( TGLVertexShaderHandle,
-    'const vec3 v0[20]=vec3[20](vec3(-1.,-1.,-1.),vec3(1.,-1.,-1.),vec3(-1.,1.,-1.),'+
+    '#version 120'#13#10'vec3 v0[20]=vec3[20](vec3(-1.,-1.,-1.),vec3(1.,-1.,-1.),vec3(-1.,1.,-1.),'+
     'vec3(-1.,-1.,1.),vec3(1.,1.,-1.),vec3(-1.,1.,1.),vec3(1.,-1.,1.),vec3(1.,1.,1.),'+
     'vec3(0.,-1.,-1.),vec3(0.,1.,-1.),vec3(0.,-1.,1.),vec3(0.,1.,1.),vec3(-1.,0.,-1.),'+
     'vec3(1.,0.,-1.),vec3(-1.,0.,1.),vec3(1.,0.,1.),vec3(-1.,-1.,0.),vec3(1.,-1.,0.),'+
     'vec3(-1.,1.,0.),vec3(1.,1.,0.));varying vec3 pos;void main(){vec3 v1=5.*v0[int(floor(gl_InstanceID*0.008))];'+
-    'gl_Vertex+=vec4(v1.x+gl_InstanceID%5-2.,v1.y+int(gl_InstanceID*.2)%5-2.,v1.z+int(gl_InstanceID*.04)%5-2.,.0);'+
-    'pos=vec3(gl_Vertex.x+8,gl_Vertex.y+7,gl_Vertex.z+8)*0.066666;gl_Position=ftransform();gl_TexCoord[0]=gl_MultiTexCoord0;}');
+    'vec4 p=gl_Vertex+vec4(v1.x+mod(gl_InstanceID,5)-2.,v1.y+mod(int(gl_InstanceID*.2),5)-2.,v1.z+mod(int(gl_InstanceID*.04),5)-2.,.0);'+
+    'pos=vec3(p.x+8,p.y+7,p.z+8)*0.066666;gl_Position=gl_ModelViewProjectionMatrix*p;gl_TexCoord[0]=gl_MultiTexCoord0;}');
   FGLSL.AddShader( TGLFragmentShaderHandle,
-    'uniform sampler2D tex;uniform sampler3D shad;varying vec3 pos;void main(){'+
+    '#version 120'#13#10'uniform sampler2D tex;uniform sampler3D shad;varying vec3 pos;void main(){'+
     'gl_FragColor=texture3D(shad,pos)*texture2D(tex,gl_TexCoord[0].xy);}');
   if not FGLSL.LinkProgram then raise Exception.Create( FGLSL.InfoLog );
   FGLSL.UseProgramObject;

@@ -10,14 +10,14 @@ uses
 
 type TBenchGPUMInst = class( TGLSceneObject )
   private
-    FGLSL: TGLProgramHandle;
+{    FGLSL: TGLProgramHandle;
     FVArr: array of TAffineVector;
     FNArr: array of TAffineVector;
     FTArr: array of TAffineVector;
     FIArr: array of GLUint;
-    FBufs: array[0..3] of Cardinal;
+    FBufs: array[0..3] of Cardinal;   }
   public
-    constructor CreateAsChild( aParent:TGLBaseSceneObject ); 
+    constructor CreateAsChild( aParent:TGLBaseSceneObject );
     procedure DoRender( var rci: TRenderContextInfo;
       renderSelf, renderChildren: Boolean); override;
   end;
@@ -26,13 +26,13 @@ implementation
 
 
 constructor TBenchGPUMInst.CreateAsChild( aParent:TGLBaseSceneObject );
-var
+{var
     i,j,k,cnt: integer;
     fg1: TFGVertexIndexList;
-    fg2: TFGVertexNormalTexIndexList;
+    fg2: TFGVertexNormalTexIndexList;   }
 begin
 
-  inherited CreateAsChild( aParent );
+ // inherited CreateAsChild( aParent );
 
 
 end;
