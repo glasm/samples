@@ -1,0 +1,10 @@
+uniform vec4 cam;
+void main(){
+  vec3 dY = vec3(0.0, 1.0, 0.0);
+  vec3 dZ = vec3(cam - gl_Vertex);
+  dZ.y = 0.0;
+  vec3 dX = cross(dY, normalize(dZ));
+  vec4 p = vec4(dY * gl_Normal.y + dX * gl_Normal.x, 0.0);
+  gl_Position    = gl_ModelViewProjectionMatrix * (gl_Vertex + p);
+  gl_TexCoord[0] = gl_MultiTexCoord0;
+}

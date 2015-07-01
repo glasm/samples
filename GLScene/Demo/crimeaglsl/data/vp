@@ -1,0 +1,11 @@
+uniform float time;
+
+void main(){
+
+  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+  
+  float t = mod(round((time + gl_Normal.x) * 10.0 - 0.5), 342);
+  gl_TexCoord[0].x = gl_MultiTexCoord0.x + mod(t, 15) * 0.0664;
+  gl_TexCoord[0].y = gl_MultiTexCoord0.y + 1.0 - floor(t / 15.0) * 0.033691;
+  
+}
