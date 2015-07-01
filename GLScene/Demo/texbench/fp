@@ -1,0 +1,8 @@
+uniform sampler2D tex;
+void main(){
+  const float d = 0.1111;
+  float x = gl_TexCoord[0].x;
+  float y = gl_TexCoord[0].y;
+  gl_FragColor = (texture2D( tex, gl_TexCoord[0].xy ) + texture2D( tex, vec2(x+d,y+d)) + texture2D( tex, vec2(x-d,y+d)) + texture2D( tex, vec2(x+d,y-d)) + texture2D( tex, vec2(x-d,y-d)) + texture2D( tex, vec2(x+d,y)) + texture2D( tex, vec2(x,y+d)) + texture2D( tex, vec2(x-d,y)) + texture2D( tex, vec2(x,y-d)))/9;
+  gl_FragColor.a = 0.5;
+}
