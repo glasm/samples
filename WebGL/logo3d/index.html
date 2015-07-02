@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>logo</title>
+	<meta charset="utf-8">
+	<style>
+		html,body,div { margin:0;background-color:#171717;	overflow:hidden; color:#ccc}
+    #pb { position:absolute; top:20px; left:20px }
+	</style>
+</head>
+<body>
+
+  <div id="pb"></div>
+ 
+  <script src="js/init.js"></script>
+  <script>
+    JS.showProgress = function(p){
+      $$("pb").innerHTML=p;
+    }
+    JS.onComplete = function(){
+      $$("pb").style.display="none";
+    }
+    JS.load(["three","scene"]);
+  </script>
+
+</body>
+</html>

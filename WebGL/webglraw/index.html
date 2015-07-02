@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WebGL test</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    *{-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:-moz-none;-o-user-select:none;user-select:none;}
+    html,body{margin:0;overflow:hidden;color:#fff}
+    label{cursor:pointer}
+    #menu{position:absolute;left:10px;top:10px}
+  </style>
+  
+		<script id="vertexShader" type="x-shader/x-vertex">
+
+      //attribute vec3 aVertexPosition; // = position
+      //attribute vec3 aVertexNormal; // = normal
+      //attribute vec2 aTextureCoord; // = uv
+
+			//uniform mat4 uMVMatrix; // = modelViewMatrix
+			//uniform mat4 uPMatrix; // = projectionMatrix
+      //uniform mat3 uNMatrix; // = normalMatrix
+      
+      uniform float uBackLightIntensity;
+      uniform vec3 uPointLightingLocation;
+      
+			varying vec4 vPosition;
+      varying vec2 vTextureCoord;
+      varying vec3 vTransformedNormal;
+      
+      varying vec4 vColor;
+      varying vec3 vLight;
+      varying vec3 vEyeDir;
+
+			void main()	{
+
+				vPosition = modelViewMatrix * vec4( position, 1.0 );
+        vEyeDir = normalize(-vPosition.xyz);
+				gl_Position = projectionMatrix * vPosition;
+        
+        vTextureCoord = uv;
+        vTransformedNormal = normalMatrix * normal;
+        
+        float c = dot(vTransformedNormal, vec3( 1., 1., 0. ));
+        c *= ( c<0.?-c:c ) * uBackLightIntensity * .5; 
+        vColor = vec4( c<0.?.8:.8-c, .8-abs(c)*0.5, c>0.?.8:c+.8, 1. );
+        
+        vLight = normalize( uPointLightingLocation );
+
+			}
+
+		</script>
+
+		<script id="fragmentShader" type="x-shader/x-fragment">
+
+			varying vec4 vPosition;
+      varying vec2 vTextureCoord;
+      varying vec3 vTransformedNormal;
+      
+      varying vec4 vColor;
+      varying vec3 vLight;
+      varying vec3 vEyeDir;
+      
+      uniform bool uUseDiffuseMap;
+      uniform sampler2D uSamplerDiffuseMap;
+      
+      uniform bool uUseNormalMap;
+      uniform sampler2D uSamplerNormalMap;
+      uniform float uNormalMapIntensity;
+
+      uniform bool uUseSpecularMap;
+      uniform sampler2D uSamplerSpecularMap;
+      uniform bool uShowSpecularHighlights;
+      uniform float uMaterialShininess;
+      
+      uniform bool uUseCavityMap;
+      uniform sampler2D uSamplerCavityMap;
+      uniform float uCavityMapIntensity;      
+      
+      uniform vec3 uAmbientColor;
+
+      uniform vec3 uPointLightingSpecularColor;
+      uniform vec3 uPointLightingDiffuseColor;  
+
+			void main()	{
+
+        gl_FragColor = vColor;
+        
+        vec3 diff = texture2D(uSamplerDiffuseMap, 4.0 * vTextureCoord.xy).rgb;
+        if(uUseDiffuseMap)
+          gl_FragColor.rgb *= diff;
+        
+        float specularLightWeighting = 0.;
+        float sh = max(texture2D(uSamplerSpecularMap, 4.0 * vTextureCoord.xy).g * uMaterialShininess, 1.);
+        if (uShowSpecularHighlights) {
+          vec3 reflectionDirection = normalize(reflect(-vLight, vTransformedNormal));
+          specularLightWeighting = pow( max( dot( reflectionDirection, vEyeDir ), 0.0 ), uUseSpecularMap?sh:uMaterialShininess );
+        }
+        
+        vec3 bump = (texture2D(uSamplerNormalMap, 4.0 * vTextureCoord.xy).rgb * 2. - 1.) * uNormalMapIntensity;
+        float nl = abs(dot( normalize( vTransformedNormal + (uUseNormalMap?bump:vec3(0.,0.,0.)) ), vLight )) * .5 + .3;
+        gl_FragColor.rgb *= uAmbientColor + uPointLightingDiffuseColor * nl + uPointLightingSpecularColor * specularLightWeighting;
+        
+        float cavi = texture2D(uSamplerCavityMap, 4.0 * vTextureCoord.xy).g;
+        if(uUseCavityMap)
+          gl_FragColor.rgb *= 1.-(1.-cavi)*uCavityMapIntensity;
+
+			}
+
+		</script>
+  
+  <script src="js/init.js"></script>
+</head>
+<body onload='Run();'>
+
+  <div id="menu">
+    Diffuse Map:<br/>
+    <label><input type="radio" name="diff" value="0" onclick="loadDiff(0);" checked/>None</label><br/>
+    <label><input type="radio" name="diff" value="1" onclick="loadDiff(1);"/>Bricks</label><br/>
+    <br/><br/>
+    Normal Map:<br/>
+    <label><input type="radio" name="norm" value="0" onclick="loadNorm(0);" checked/>None</label><br/>
+    <label><input type="radio" name="norm" value="1" onclick="loadNorm(1);"/>Bricks</label><br/>
+    <br/><br/>
+    Specular Map:<br/>
+    <label><input type="radio" name="spec" value="0" onclick="loadSpec(0);" checked/>None</label><br/>
+    <label><input type="radio" name="spec" value="1" onclick="loadSpec(1);"/>Bricks</label><br/>
+    <br/><br/>
+    Cavity Map:<br/>
+    <label><input type="radio" name="cavi" value="0" onclick="loadCavi(0);" checked/>None</label><br/>
+    <label><input type="radio" name="cavi" value="1" onclick="loadCavi(1);"/>Bricks</label>
+  </div>
+
+</body>
+</html>

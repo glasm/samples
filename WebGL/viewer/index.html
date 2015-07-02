@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>GLZ viewer</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+        font-family: Monospace;
+				background-color: #cccccc;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+    <script src="js/three.min.js"></script>
+    <script src="js/viewer.js"></script>
+    <div style="position:absolute;left:0;top:0;padding:8px">
+      <div id="mlist"></div>
+    </div>
+		<script>
+      var mlist = ['sculpt'];
+      var mcur = 0;
+      for(var s="",i=0;i<mlist.length;i++)
+        s += '<label><input value="'+i+'" name="mlist" type="radio"'+(!i?' checked':'')+' onclick="GLZ.loadModel(mlist[this.value]);mcur='+i+';"/>'+mlist[i]+'</label><br/>';
+      document.getElementById('mlist').innerHTML = s;
+      GLZ.loadModel( mlist[mcur] );
+    </script>
+	</body>
+</html>

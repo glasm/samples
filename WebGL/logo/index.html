@@ -1,0 +1,32 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+    <title>logo</title>
+	
+	<style type="text/css">
+	<!--
+		body { margin:20px; text-align:center; background-color:#f0f0f0 }
+		button { font:15px/16px 'Trebuchet MS'; padding:8px; }
+		#sample { width:200px; height:282px; background:url(pak1.jpg); }
+	-->
+	</style>
+	
+	<script src="three.min.js"></script>
+    <script>
+
+var gl={cam:null,scn:null,view:null};function initWebGL(){var b=200;var d=282;gl.cam=new THREE.PerspectiveCamera(10,b/d,1,10000);gl.cam.position.z=250;gl.cam.position.y=2.6;gl.cam.position.x=-2.6;gl.scn=new THREE.Scene();gl.view=new THREE.CanvasRenderer();gl.view.setSize(b,d);var c=new THREE.PlaneGeometry(16,16);var e=new THREE.Texture();var a=new THREE.ImageLoader();a.addEventListener("load",function(g){e.image=g.content;e.needsUpdate=true;var f=new THREE.MeshBasicMaterial({map:e,transparent:true});var h=new THREE.Mesh(c,f);h.rotation.y=0.4;h.rotation.x=0.3;gl.scn.add(h);gl.view.render(gl.scn,gl.cam)});a.load("logo.png");document.getElementById("sample").appendChild(gl.view.domElement)};
+    </script>
+	
+</head>
+<body>
+   	
+	<div id="sample">
+		
+	</div>
+	
+	<script>
+		initWebGL();
+	</script>
+	
+</body>
+</html>

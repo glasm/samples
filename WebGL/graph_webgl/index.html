@@ -1,0 +1,241 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+    <title>webgl</title>
+	
+	<style type="text/css">
+	<!--
+		body { margin:0; overflow:hidden; font:12px Verdana }
+		#info div { position:absolute; left:-200px; top:0; width:100px; margin-left:-50px; text-align:center; }
+	-->
+	</style>
+	
+	<script src="three.min.js"></script>
+    <script>
+	
+		var dat = { // исходные данные
+			icount: 3, // количество слоев
+			vcount: 7, // количество участников
+			layers: [	// слои
+					{ "name":"Забег I", "point":null },
+					{ "name":"Забег II", "point":null },
+					{ "name":"Забег III", "point":null }], 
+			items: [	// массив имен и данных 
+					{ "name":"Петров", "values":[ 1.41, 1.28, 1.33 ], "points":[null] }, 
+					{ "name":"Иванов", "values":[ 1.22, 1.08, 1.78 ], "points":[null] },
+					{ "name":"Алексеев", "values":[ 1.35, 1.03, 1.40 ], "points":[null] },
+					{ "name":"Гринченко", "values":[ 2.25, 2.10, 1.80 ], "points":[null] },
+					{ "name":"Авдеев", "values":[ 0.75, 1.00, 1.60 ], "points":[null] },
+					{ "name":"Широков", "values":[ 1.44, 1.44, 1.20 ], "points":[null] },
+					{ "name":"Долгов", "values":[ 1.29, 1.50, 1.90 ], "points":[null] }
+			]
+		}
+	
+		var vp = {}; // viewport - область вывода графики
+		var st = { // state - текущие состояния
+			angleX:0, // предельный угол смещения по X
+			angleY:0, // предельный угол смещения по Y
+			curangleX:0, // текущий угол смещения по X
+			curangleY:0, // текущий угол смещения по Y
+			mpos: { x:window.innerWidth/2, y:window.innerHeight/2 } // начальные координаты мыши
+		} 
+		
+		function init() {
+
+			// поиск пределов значений для корректного отображения
+			dat.min = 99999;
+			dat.max = -99999;
+			for(var i = 0; i < dat.vcount; i++)
+				for(var j = 0; j < dat.icount; j++) { 
+					var v = dat.items[i].values[j];
+					dat.min = dat.min > v ? v : dat.min;
+					dat.max = dat.max < v ? v : dat.max;
+				}
+			dat.delta = dat.min / (dat.max - dat.min);
+			
+			// камера
+			vp.cam = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
+			vp.dist = 10 + dat.vcount * 2; // условное расстояние от камеры до графика
+			vp.cam.position.z = vp.dist;
+
+			// иерархия объектов
+			vp.scn = new THREE.Scene();
+			vp.dummy = new THREE.Object3D();
+			vp.scn.add( vp.dummy );
+
+			// окно просмотра
+			vp.view = new THREE.WebGLRenderer();
+			vp.view.setSize( window.innerWidth, window.innerHeight );
+			vp.view.setClearColor( 0xcccccc, 1 );
+			
+			// добавляем WebGL на страницу
+			document.body.appendChild( vp.view.domElement );
+			document.addEventListener('mousemove', on_mMove, false );
+			
+			// надписи поверх
+			vp.info = document.createElement('div');
+			vp.info.setAttribute('id', 'info');
+			document.body.appendChild( vp.info );
+			for(i = 0; i < dat.vcount; i++) {
+				vp.info.innerHTML += '<div id="c' + i + '">' + dat.items[i].name + '</div>';
+				for(j = 0; j < dat.icount; j++)
+					vp.info.innerHTML += '<div id="v' + i + '_' + j +'">' + dat.items[i].values[j] + '</div>';
+			}
+			for(j = 0; j < dat.icount; j++)
+				vp.info.innerHTML += '<div id="cl' + j + '">' + dat.layers[j].name + '</div>';
+		
+			// обновление окна
+			vp.redraw = function() {
+								
+				// интерполяция
+				st.curangleX = st.curangleX + (st.angleX - st.curangleX) / 10;
+				st.curangleY = st.curangleY + (st.angleY - st.curangleY) / 10;
+							
+				// вращение сцены
+				vp.dummy.rotation.y = -st.curangleX;
+				vp.dummy.rotation.x = THREE.Math.clamp( st.curangleY, -0.8, 0.8);
+				
+ 				// подгоняем размер окна, если менялся
+				if(vp.view.width != window.innerWidth || vp.view.height != window.innerHeight)
+					vp.view.setSize( window.innerWidth, window.innerHeight );
+				
+				// перерисовываем сцену
+				vp.view.render( vp.scn, vp.cam );
+				
+				// смещаем надписи
+				redrawCaptions();
+				
+				// следкющий кадр через 1/50 сек
+				setTimeout( vp.redraw, 20 );
+			}		
+			vp.redraw();
+
+        }
+		
+		
+		//
+		// визуализация массива
+		//		
+		function addGraph() {
+		
+			// добавление 
+			var geom = new THREE.CubeGeometry( 0.05, 6, 6 );
+			var mat = new THREE.MeshNormalMaterial();
+			var mesh = new THREE.Mesh( geom, mat );
+			mesh.position = new THREE.Vector3( -dat.vcount - 2, 1, 0 );
+			vp.dummy.add( mesh );
+			
+			geom = new THREE.CubeGeometry( dat.vcount * 2 + 2, 0.05, 6 );
+			mesh = new THREE.Mesh( geom, mat );
+			mesh.position = new THREE.Vector3( -1, -2, 0 );
+			vp.dummy.add( mesh );
+			
+			for(var j = 0; j < dat.icount; j++) {				
+				dat.layers[j].point = new THREE.Object3D();
+				dat.layers[j].point.position = new THREE.Vector3( mesh.position.x + dat.vcount + 2, -1.5, j * 2 - dat.icount / 2 - 0.5 );
+				vp.dummy.add( dat.layers[j].point );
+			}			
+			
+			for(var i = 0; i < dat.vcount; i++)
+				for(var j = 0; j < dat.icount; j++) {
+			
+					var d = dat.items[i].values[j] / dat.max * 5; // высота столбика
+				
+					// добавление кубика
+					geom = new THREE.CubeGeometry( 1, d, 1 );
+					mat = new THREE.MeshNormalMaterial();
+					mesh = new THREE.Mesh( geom, mat );
+					mesh.position = new THREE.Vector3( i * 2 - dat.vcount, d / 2 - 2, j * 2 - dat.icount / 2 - 0.5 );
+					vp.dummy.add( mesh );
+					
+					// добавление точки для проекции имён
+					if(!dat.items[i].points[0]) {
+						dat.items[i].points[0] = new THREE.Object3D();
+						dat.items[i].points[0].position = new THREE.Vector3( mesh.position.x, mesh.position.y - d / 2 - (i&1 ? 0.2 : 0.7), 0 );
+						vp.dummy.add( dat.items[i].points[0] );
+					}
+					
+					// добавление точки для проекции значений
+					dat.items[i].points[j + 1] = new THREE.Object3D();
+					dat.items[i].points[j + 1].position = new THREE.Vector3( mesh.position.x, mesh.position.y + d / 2 + 1, j * 2 - dat.icount / 2 - 0.5 );
+					vp.dummy.add( dat.items[i].points[j + 1] );
+					
+				}
+		
+		}
+		
+		//
+		// корректировка позиций надписей
+		//		
+		function redrawCaptions() {		
+		
+			if( !dat.items[0].points[0] )
+				return;
+				
+			for(var i = 0; i < dat.vcount; i++) {
+			
+				// проекция имени
+				var pos = getXYCoord( dat.items[i].points[0] );
+				var c = document.getElementById('c' + i);
+				c.style.left = pos.x + 'px';
+				c.style.top = pos.y + 'px';
+							
+				for(var j = 0; j < dat.icount; j++) {
+					
+					// проекция значения
+					var pos = getXYCoord( dat.items[i].points[j + 1] );
+					var v = document.getElementById('v' + i + '_' + j);
+					v.style.left = pos.x + 'px';
+					v.style.top = pos.y + 'px';
+					
+				}
+			}
+		
+			for(var j = 0; j < dat.icount; j++) {
+					
+				// проекция названий слоев
+				var pos = getXYCoord( dat.layers[j].point );
+				var v = document.getElementById('cl' + j);
+				v.style.left = pos.x + 'px';
+				v.style.top = pos.y + 'px';
+					
+			}
+		
+		}
+		
+		//
+		// преобразование мировых координат в экранные
+		//
+		function getXYCoord( obj ) {
+		
+			var pos = new THREE.Vector3().applyProjection( obj.matrixWorld );
+			new THREE.Projector().projectVector( pos, vp.cam );
+			pos.x = Math.round(( pos.x + 1 ) / 2 * window.innerWidth);
+			pos.y = -Math.round(( pos.y - 1 ) / 2 * window.innerHeight);
+			return pos;
+		
+		}		
+		
+		//
+		// обработка вращения сцены от мышки
+		//
+		function on_mMove(e) {
+		
+			st.angleX += (st.mpos.x - e.clientX) * 0.003; // новые предельные углы
+			st.angleY -= (st.mpos.y - e.clientY) * 0.003;  // 
+			st.mpos = { x:e.clientX, y:e.clientY }; // новые координаты мыши
+		
+		}
+	
+    </script>
+	
+</head>
+<body>
+			
+	<script>
+		init();
+		addGraph();
+	</script>
+	
+</body>
+</html>

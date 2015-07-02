@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>gis</title>
+	<meta name="description" content="" />
+
+  <style>
+	<!--
+		html, body { height:100%; overflow:hidden; }
+		body { margin:0; }
+    #over { position:absolute; left:0; top:0; width:100%; height:100%; z-index:9998; pointer-events:none; }
+    #menu { position:absolute; left:20px; top:100%; margin-top:-120px; z-index:9999 }
+    #menu div { float:left; }
+    .rshad { -webkit-border-radius:6px; -moz-border-radius:6px; border-radius:6px; -webkit-box-shadow:1px 1px 4px rgba(0, 0, 0, 0.4); -moz-box-shadow:1px 1px 4px rgba(0, 0, 0, 0.4); box-shadow:1px 1px 4px rgba(0, 0, 0, 0.4); }
+    .buildbut { background:url(data/build.png); margin:8px; width:80px; height:80px; cursor:pointer; border:2px solid #0088c0 }
+    .bbd { background-position:0 80px; border:2px solid gray }
+    .none { display:none }
+    #submenu div { background:url(data/submenu.png); margin:20px 0 0 4px; width:64px; height:64px; cursor:pointer; border:1px solid red }
+    #controls { margin:-180px 0 20px -90px; width:50px; }
+    .cbut { background:url(data/controls.png); margin:0 0 4px 4px; width:50px; height:50px; cursor:pointer; border:1px solid gray }
+    #photo { background:url(data/photo.png); position:absolute; left:100%; top:100%; margin:-100px 0 0 -100px; width:80px; height:80px; border:2px solid green; cursor:pointer; }
+
+	-->
+	</style>
+  
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+  
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+  <script src="three.js"></script>
+  <script src="objloader.js"></script>
+  <script type="text/javascript">
+  
+function $$(a){return document.getElementById(a)}var vp={sW:window.innerWidth,sH:window.innerHeight,build:false};var objlst=[{n:"1",s:1.1},{n:"complex",s:0.7},{n:"building3",s:0.8},{n:"building2",s:0.5}];var cobj=-1;var sel;var mlst=[];var map;var mode;var turnangle=0.3;function init(){map=L.map("map",{inertia:false,zoomAnimationThreshold:0}).setView([58.540326337979,31.3152100544],18);L.tileLayer("https://mts1.google.com/vt/lyrs=m@239000000&hl=ru&src=app&x={x}&s=&y={y}&z={z}&s=Gali",{maxZoom:18,attribution:"qwe"}).addTo(map);vp.cam=new THREE.OrthographicCamera(-vp.sW/2,vp.sW/2,vp.sH/2,-vp.sH/2,100,50000);vp.cam.position.y=25000;vp.cam.rotation.x=-1.57079632679;vp.scn=new THREE.Scene();vp.dummy=new THREE.Object3D();vp.scn.add(vp.dummy);vp.view=new THREE.WebGLRenderer({antialias:true});vp.view.setSize(vp.sW,vp.sH);vp.view.setClearColor(0,0);var a=new THREE.PointLight(16777215,1);a.position.set(15000,15000,15000);vp.scn.add(a);var b=new THREE.AmbientLight(6710886);vp.scn.add(b);vp.redraw=function(){if(vp.sW!=window.innerWidth||vp.sH!=window.innerHeight){vp.sW=window.innerWidth;vp.sH=window.innerHeight;vp.cam.left=-vp.sW/2;vp.cam.right=vp.sW/2;vp.cam.top=vp.sH/2;vp.cam.bottom=-vp.sH/2;vp.cam.updateProjectionMatrix();vp.view.setSize(vp.sW,vp.sH)}if(sel){sel.children[0].rotation.y=new Date().getTime()*0.0002;sel.children[0].visible=cobj>0;if(cobj>0){mlst[0].p=mlst[cobj].p}}var c=1/(1<<(18-map.getZoom()));for(i=0;i<mlst.length;i++){c1=map.latLngToContainerPoint(mlst[i].p,map.getZoom());mlst[i].m.position.x=c1.x-vp.sW/2;mlst[i].m.position.z=c1.y-vp.sH/2;mlst[i].m.scale.x=c;mlst[i].m.scale.y=c;mlst[i].m.scale.z=c}vp.view.render(vp.scn,vp.cam)};vp.redraw();vp.changeobj=function(c){if(cobj>0){if(mode=="move"){mlst[cobj].p=c.latlng}else{if(mode=="turn"){vp.dummy.remove(mlst[cobj].m);mlst[cobj].m=cloneObject(mlst[cobj].t,c.layerPoint.x/vp.sW*12.566-6.283);vp.dummy.add(mlst[cobj].m)}}}};vp.fixobj=function(d){if(mode!=""){vp.changeobj(d);setMode("")}else{var c=[];c0=d.containerPoint;for(i=1;i<mlst.length;i++){c1=map.latLngToContainerPoint(mlst[i].p,map.getZoom());if(Math.sqrt((c1.x-c0.x)*(c1.x-c0.x)+(c1.y-c0.y)*(c1.y-c0.y))<objlst[mlst[i].t].s*128/(1<<(18-map.getZoom()))){c.push(i)}}if(!c.length){selectObj(-1)}else{q=Math.floor((Math.random()*c.length));selectObj(c[q])}}};$$("over").appendChild(vp.view.domElement);map.addEventListener("zoomstart",vp.redraw);map.addEventListener("move",vp.redraw);map.addEventListener("mousemove",vp.changeobj);map.addEventListener("mousedown",vp.fixobj);setInterval(vp.redraw,20)}window.onload=function(a){loadNextOBJ()};function loadNextOBJ(){cobj=-1;for(i=0;i<objlst.length;i++){if(objlst[i].obj==undefined){cobj=i;var a=new THREE.OBJMTLLoader();a.load("data/"+objlst[i].n+".obj","data/"+objlst[i].n+".mtl",on_objloaded);return}}$$("menu").setAttribute("class","");init();var a=new THREE.OBJMTLLoader();a.load("data/sel.obj","data/sel.mtl",function(b){sel=b;vp.scn.add(sel);mlst.push({m:sel,p:map.getCenter()})})}function on_objloaded(a){$$("submenu").innerHTML+='<div class="rshad '+objlst[cobj].n+'" style="background-position:'+(64*cobj)+'px 0" onmousedown="addObj('+cobj+');"></div>';objlst[cobj].obj=a;loadNextOBJ()}function addObj(a,c){if(a>=objlst.length||a<0){return}var b=cloneObject(a,turnangle);vp.dummy.add(b);mlst.push({m:b,t:a,p:c||map.getCenter()});sel.children[0].scale.set(objlst[a].s,1,objlst[a].s);selectObj(mlst.length-1);setMode("move")}function cloneObject(b,a){turnangle=a;var e=new THREE.Object3D();var d=new THREE.Matrix4().makeRotationY(a);for(i=0;i<objlst[b].obj.children.length;i++){var f=objlst[b].obj.children[i];var c=f.geometry.clone();for(j=0;j<c.vertices.length;j++){c.vertices[j].applyMatrix4(d);c.vertices[j].z-=c.vertices[j].y*0.8}c.computeCentroids();c.computeFaceNormals();e.add(new THREE.Mesh(c,f.material))}return e}function selectObj(a){cobj=a>=mlst.length||a<0?-1:a;$$("controls").setAttribute("class",a>=0?"":"none");mode=""}function setMode(a){if(a=="del"&&mode=="del"){vp.dummy.remove(mlst[cobj].m);mlst.slice(cobj,1);selectObj(-1);mode=""}else{mode=(a==mode?"":a)}$$("cbutdel").style.backgroundPosition=(mode=="del"?"50px":"0")+" 0";$$("cbutpos").style.backgroundPosition=(mode=="move"?"0":"50px")+" 100px";$$("cbutrot").style.backgroundPosition=(mode=="turn"?"0":"50px")+" 50px"}function shot(){selectObj(-1);vp.redraw();k=vp.view.domElement.toDataURL();console.log(k)};
+    
+  </script>
+	  
+</head>
+<body>
+
+  <div id="map" style="width:100%;height:100%"></div>
+  <div id="over"></div>
+  <div id="menu" class="none">
+    <div class="buildbut rshad bbd" onmousedown="vp.build=!vp.build;this.setAttribute('class','buildbut rshad'+(vp.build?'':' bbd'));$$('submenu').setAttribute('class',vp.build?'':'none');selectObj(-1)"></div>
+    <div id="controls" class="none">
+      <div id="cbutdel" class="cbut rshad" style="background-position:0 0" onmousedown="setMode('del');"></div>
+      <div id="cbutpos" class="cbut rshad" style="background-position:50px 100px" onmousedown="setMode('move');"></div>
+      <div id="cbutrot" class="cbut rshad" style="background-position:50px 50px" onmousedown="setMode('turn');"></div>
+    </div>
+    <div id="submenu" class="none"></div>
+  </div>
+  <div id="photo" class="rshad" onmousedown="shot();"></div>
+
+</body>
+</html>

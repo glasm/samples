@@ -1,0 +1,462 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Двунаправленный массив (HTML5, Canvas, jQuery)</title>
+	
+	<style type="text/css">
+	<!--
+		body { background:#eeeeee; }
+		div { position:absolute; left:50%; top:20px; width:800px; margin-left:-400px; padding-top:2px; text-align:center; background-color:#ffffff; }
+		button { font:15px/16px 'Verdana'; padding:8px; }
+	-->
+	</style>
+	
+	<script type="text/javascript" src="jquery.js"></script>
+    <script>
+	
+		var vp = {}; // viewport - область вывода графики
+		
+		var list;					// список ячеек, которые являются двунаправленным массивом
+
+		var ani = {
+			index: 0,				// номер анимации
+			cur: '',				// тип анимации ('new', 'del', 'mov')
+			prm: {},				// параметры анимации
+			dt: 0,					// время
+			mov: { p1:-1, p2:-1 }	// предыдущая пара вращения
+		}
+		var st = {					// состояния
+			pause: true,			// пауза
+			focused: true,			// страница активна
+			cnt: 0					// общее количество ячеек с учетом удаленных
+		}
+		
+	
+		// 
+		// подготовка программы (после загрузки страницы)
+		//
+		$(document).ready( function() {
+		
+			initViewportObj(); // подготовка области вывода графики	
+			initEvents(); // описание событий 
+			
+		});		
+				
+		//
+		// подготовка области вывода графики
+		//
+		function initViewportObj() {
+		
+			vp.canvas = $("#canvas")[0]; // холст
+			vp.ctx = canvas.getContext("2d"); // получаем интерфейс для работы с 2х мерной графикой
+			vp.w = $("#canvas").width(); // ширина холста
+			vp.h = $("#canvas").height(); // высота холста
+			
+			// очистка экрана
+			vp.clear = function() {
+				vp.ctx.fillStyle = 'white'; // цвет заливки
+				vp.ctx.fillRect(0,0, vp.w,vp.h); // закрашивание области экрана
+			};
+			vp.clear();
+			
+			// запуск
+			vp.run = function() {
+
+				st.pause = false;			// убираем паузу
+				st.cnt = 0;					// общий счетчик ячеек
+				list = [];					// очищаем список
+				ani.index = 0; 				// сбрасываем счетчик анимаций
+				ani.cur = ''; 	 			// нет анимации
+				
+			}
+
+
+			// текущий кадр анимации
+			vp.paint = function() {
+				
+				vp.clear(); // очистка экрана
+				
+				for(var i=0; i < list.length; i++) { 
+					
+					vp.ctx.beginPath();
+					vp.ctx.rect( list[i].cell.x - 30, list[i].cell.y - 32, 60, 64 );
+					vp.ctx.fillStyle = 'rgba(50,50,50,0.1)';
+					vp.ctx.fill();
+					vp.ctx.strokeStyle = '#A2B9A2';
+					vp.ctx.stroke();
+					vp.ctx.closePath();
+					
+					vp.ctx.beginPath();
+					vp.ctx.arc( list[i].cell.x + 30, list[i].cell.y - 9, 6, 0, 2 * Math.PI, false);
+					vp.ctx.fillStyle = '#85DF7D';
+					vp.ctx.fill();
+					vp.ctx.stroke();
+					vp.ctx.closePath();
+					
+					vp.ctx.beginPath();
+					vp.ctx.arc( list[i].cell.x - 30, list[i].cell.y - 9, 2.5, 0, 2 * Math.PI, false);
+					vp.ctx.fill();
+					vp.ctx.stroke();
+					vp.ctx.closePath();
+
+					vp.ctx.beginPath();
+					vp.ctx.arc( list[i].cell.x + 30, list[i].cell.y + 7, 2.5, 0, 2 * Math.PI, false);
+					vp.ctx.fillStyle = '#E0D17C';
+					vp.ctx.fill();
+					vp.ctx.stroke();
+					vp.ctx.closePath();
+					
+					vp.ctx.beginPath();
+					vp.ctx.arc( list[i].cell.x - 30, list[i].cell.y + 7, 6, 0, 2 * Math.PI, false);
+					vp.ctx.fill();
+					vp.ctx.stroke();
+					vp.ctx.closePath();
+					
+					vp.ctx.font = 'Bold 22px Arial';
+					vp.ctx.fillStyle = 'black';
+					vp.ctx.textAlign = 'center';
+					vp.ctx.fillText( list[i].num, list[i].cell.x, list[i].cell.y+7 );
+					
+					
+				}
+				
+				for(i = 0; i < list.length; i++) {
+		
+					var pn = list[i].nextCId;
+					var pp = list[i].prevCId;
+		
+					if(pn >= 0) {
+						vp.ctx.beginPath();
+						vp.ctx.strokeStyle = 'rgba(0,204,0,' + list[pn].cell.alpha * list[i].cell.alpha + ')';
+						with(list[i].cell)
+							vp.ctx.moveTo(x + 30,y - 9);
+						with(list[pn].cell)
+							vp.ctx.lineTo(x - 30,y - 9);
+						vp.ctx.stroke();
+					}
+		
+					if(pp >= 0) {
+						vp.ctx.beginPath();
+						vp.ctx.strokeStyle = 'rgba(204,204,0,' + list[pp].cell.alpha * list[i].cell.alpha + ')';
+						with(list[i].cell)
+							vp.ctx.moveTo(x - 30,y + 7);
+						with(list[pp].cell)
+							vp.ctx.lineTo(x + 30,y + 7);
+						vp.ctx.stroke();
+					}
+				
+				}
+				
+			}
+			
+			// вывод на экран текущей анимации
+			vp.redraw = function() {
+			
+				if(st.pause || !st.focused)
+					return;
+		
+				if(ani.cur == '') {							// если нет анимаций
+					vp.newAnimation();							// назначаем новую анимацию
+					vp.alignX();								// центруем ячейки
+				}
+	
+				// анимация перемещений по X
+				for(var i = 0; i < list.length; i++)
+					with(list[i])
+						cell.x = oldx + (newx - oldx) * (1 - ani.dt);
+			
+				var p;
+				var pn;
+				var pp;
+			
+				// анимация по Y
+				switch(ani.cur) {
+		
+					case 'new':								// новая ячейка
+		
+						with(list[ani.prm.id]) {
+							cell.y = 200 - 150 * ani.dt;
+							cell.alpha = 1 - ani.dt;
+							anix = 1 - ani.dt;
+						}
+			
+						break;
+			
+					case 'del':								// удаление 
+		
+						with(list[ani.prm.id]) {
+							cell.y = 200 + 150 * (1 - ani.dt);
+							cell.alpha = ani.dt;
+							anix = ani.dt;
+						}
+			
+						break;
+			
+					default:								// перемещение
+		
+						pn = list[ani.prm.p1].cell;
+						pp = list[ani.prm.p2].cell;
+						var cx = (pn.x + pp.x) / 2;
+						var dx = (pp.x - pn.x) / 2;
+						var sn = Math.sin(ani.dt * Math.PI + Math.PI / 2);
+						var cs = Math.cos(ani.dt * Math.PI + Math.PI / 2);
+					
+						pn.x = cx - dx * sn;
+						pn.y = 200 - 60 * cs;
+						
+						pp.x = cx + dx * sn;
+						pp.y = 200 + 60 * cs;
+						
+						break;
+			
+				}
+	
+				ani.dt -= 0.02;
+				// анимация закончена
+				if(ani.dt <= 0) {
+		
+					if(ani.cur == 'del') {
+			
+						p = list[ani.prm.id];
+						pn = p.nextCId;
+						pp = p.prevCId;
+				
+						// соединяем два соседних элемента
+						if(pn >= 0)	list[pn].prevCId = pp;
+						if(pp >= 0)	list[pp].nextCId = pn;
+				
+						// копируем последний элемент на место удаленного, чтоб не перебирать весь массив
+						if(ani.prm.id < list.length - 1) {
+				
+							list[ani.prm.id] = list[list.length - 1];
+							p = list[ani.prm.id];
+							pn = p.nextCId;
+							pp = p.prevCId;
+				
+							if(pn >= 0) list[pn].prevCId = ani.prm.id;
+							if(pp >= 0)	list[pp].nextCId = ani.prm.id;
+						}
+			
+						// удаляем последний элемент массива
+						list = list.slice(0, list.length - 1);
+						
+					}
+		
+					// выравниваем ячейки по высоте (ошибки анимации)
+					for(i = 0; i < list.length; i++)
+						list[i].cell.y = 200;
+		
+					ani.cur = '';
+					ani.index++;
+				}	
+
+				vp.paint();
+			
+			};
+			setInterval(vp.redraw, 1000/60); // плавное обновление каждые 1/60 сек
+			
+			
+			// создание ячейки
+			vp.newCell = function() {
+	
+				var obj = {
+					num: ++st.cnt,							// порядковый номер
+					nextCId: -1,							// ссылки на следующую и
+					prevCId: -1,							// предыдущую ячейки
+					anix: 0,								// анимация перемещений
+					cell: {x:0, y:0, alpha:0 },				// ячейка
+					newx:0, oldx:0
+				};
+		
+				return obj;
+	
+			}
+			
+			// создание анимации
+			vp.newAnimation = function() {
+
+				var p, pn, pp; // ссылки на ячейку, к которой привязывается новая
+				var j;
+				var r = Math.random(); // случайное число определяющее следующую анимацию
+		
+				// первая анимация - добавление ячейки
+				if(!ani.index) {
+					
+					list.push( vp.newCell() );
+		
+					ani.prm = { id:0 };
+					ani.cur = 'new';
+					ani.dt = 1;
+
+					return;
+					
+				}
+	
+				// 3,4 анимации и при r < 0.3 - добавление ячейки
+				if((ani.index > 0 && ani.index < 4) || (list.length < 8 && r < 0.3)) {
+
+					j = list.length;
+					list.push( vp.newCell() );
+		
+					// выбираем существующий элемент
+					p = rnd(0,j - 1);
+					pn = list[p].nextCId;
+					pp = list[p].prevCId;
+		
+					// привязываемся справа...
+					if(Math.random() > 0.5) {
+						if(pn >= 0) {
+							list[pn].prevCId = j;
+							list[j].nextCId = pn;
+						}
+						list[p].nextCId = j;
+						list[j].prevCId = p;
+					}else { // .. или слева
+						if(pp >= 0) {
+							list[pp].nextCId = j;
+							list[j].prevCId = pp;
+						}
+						list[p].prevCId = j;
+						list[j].nextCId = p;
+					}
+
+					// анимация
+					ani.prm = { id:j };
+					ani.cur = 'new';
+					ani.dt = 1;
+		
+					return;
+		
+				}
+
+				// при r < 0.6 - удаление ячейки
+				if(list.length > 3 && r < 0.6) {
+		
+					ani.prm = { id: rnd(0, list.length - 1) };
+					ani.cur = 'del';
+					ani.dt = 1;
+		
+					return;
+				
+				}
+	
+				// обмен ячейками
+				j = 0;
+				do{
+					pn = rnd(0, list.length - 2);
+					pp = rnd(1, list.length - 1);
+					j++;
+					if(j > 20) { // после 20 итераций принудительно назначаются
+						pn = 0;
+						pp = list.length - 1;
+					}			
+				}while( pn == pp || pn > pp ||
+					(ani.mov.p1 == pn && ani.mov.p2 == pp) ||
+					(ani.mov.p2 == pn && ani.mov.p1 == pp));
+				
+				// сохраняем текущих участников чтоб анимация не повторялась
+				ani.mov = { p1:pn, p2:pp };
+	
+				// меняем местами только число
+				var k = list[pn].num;
+				list[pn].num = list[pp].num;
+				list[pp].num = k;
+	
+				// анимация
+				ani.prm = { p1: pn, p2: pp };
+				ani.cur = 'mov';
+				ani.dt = 1;
+
+			}
+			
+
+			// выравнивание ячеек по центру
+			vp.alignX = function() {
+	
+				var j = 0;
+	
+				// поиск первого элемента массива (нет ссылки на предыдущую ячейку)
+				for(var i = 0; i < list.length; i++)
+					if(list[i].prevCId < 0)
+						break;
+
+				// если найден, то сортируем
+				if(i < list.length - (ani.cur == 'del' ? 1 : 0)) {
+					do{
+						list[i].newx = 394 + 100 * ( j - (list.length - 1) / 2 );
+						if(!list[i].cell.alpha)
+							list[i].cell.x = list[i].newx;
+						list[i].oldx = list[i].cell.x;
+						if(ani.cur != 'del' || ani.prm.id != i)
+							j++;
+						i = list[i].nextCId;
+					} while(i >= 0);		
+				}
+	
+			}
+			
+		}
+		
+		//
+		// описание событий
+		//
+		function initEvents() {
+			
+			// запуск или снятие с паузы программы
+			$("#bresume").click( function() {
+
+				if(st.pause)
+					st.pause = false;
+				if(!list)
+					vp.run();
+				
+			});
+	
+			// остановка выполнения программы
+			$("#bpause").click( function() {
+			
+				st.pause = true;
+				
+			});
+
+			// создаем новую анимацию
+			$("#brestart").click( function() {
+				
+				vp.run();
+				
+			});
+			
+			// уходим со страницы
+			$(window).blur( function() {
+				
+				st.focused = false;
+				
+			});
+			
+			// возвращаемся на страницу
+			$(window).focus( function() {
+				
+				st.focused = true;
+			
+			});
+			
+		}		
+					
+		function rnd(c1,c2){return Math.floor(Math.random()*(c2-c1+1)+c1);}
+	
+    </script>
+	
+</head>
+<body>
+   	
+	<div>
+		<button id="bresume">Запуск</button>
+		<button id="bpause">Пауза</button>
+		<button id="brestart">Повтор</button>
+		<hr/>
+	
+		<canvas id="canvas" width="800" height="500"></canvas>
+	</div>
+	
+</body>
+</html>

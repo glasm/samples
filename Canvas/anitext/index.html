@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>anitext</title>
+	<meta charset="utf-8">
+	<style>
+		html,body { margin:0;width:100%;height:100%;background-color:#252525;overflow:hidden}
+    #mycanvas { border-right:1px solid #353535; border-bottom:1px solid #353535}
+	</style>
+  
+  <script src="js/anitext.js"></script>
+  
+</head>
+<body>
+
+  <canvas id="mycanvas" width="800" height="400"></canvas>
+  <script>
+    aniText.create('mycanvas','words.xml');
+  </script>
+
+</body>
+</html>

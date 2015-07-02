@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WebGL test</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    *{-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:-moz-none;-o-user-select:none;user-select:none;}
+    html,body{margin:0;overflow:hidden;color:#fff}
+    label{cursor:pointer}
+    #menu{position:absolute;left:10px;top:10px}
+  </style>
+  <script src="js/init.js"></script>
+</head>
+<body onload='Run();'>
+
+  <div id="menu">
+    Diffuse Map:<br/>
+    <label><input type="radio" name="diff" value="0" onclick="loadDiff(0);" checked/>None</label><br/>
+    <label><input type="radio" name="diff" value="1" onclick="loadDiff(1);"/>Bricks</label><br/>
+    <label><input type="radio" name="diff" value="2" onclick="loadDiff(2);"/>Stone</label><br/>
+    <label><input type="radio" name="diff" value="3" onclick="loadDiff(3);"/>Bamboo</label>
+    <br/><br/>
+    Normal Map:<br/>
+    <label><input type="radio" name="norm" value="0" onclick="loadNorm(0);" checked/>None</label><br/>
+    <label><input type="radio" name="norm" value="1" onclick="loadNorm(1);"/>Bricks</label><br/>
+    <label><input type="radio" name="norm" value="2" onclick="loadNorm(2);"/>Stone</label><br/>
+    <label><input type="radio" name="norm" value="3" onclick="loadNorm(3);"/>Bamboo</label> 
+    <br/><br/>
+    Bump Map:<br/>
+    <label><input type="radio" name="bump" value="0" onclick="loadBump(0);" checked/>None</label><br/>
+    <label><input type="radio" name="bump" value="1" onclick="loadBump(1);"/>Bricks</label><br/>
+    <label><input type="radio" name="bump" value="2" onclick="loadBump(2);"/>Stone</label><br/>
+    <label><input type="radio" name="bump" value="3" onclick="loadBump(3);"/>Bamboo</label> 
+    <br/><br/>
+    Opacity Map:<br/>
+    <label><input type="radio" name="opac" value="0" onclick="loadOpac(0);" checked/>None</label><br/>
+    <label><input type="radio" name="opac" value="3" onclick="loadOpac(3);"/>Bamboo</label>
+  </div>
+
+</body>
+</html>

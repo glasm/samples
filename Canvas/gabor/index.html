@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>GABOR Canvas</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    div{display:inline-block}
+  </style>
+  <script>
+    function $$(a){return document.getElementById(a)}
+    function $$$(a){return document.createElement(a)}
+    var cvsA = $$$("canvas");
+    var ctxA = cvsA.getContext("2d");
+    var h=document.getElementsByTagName("head")[0];
+    console.log(ctxA);
+    var gabor = function(div,imSize,lamda,theta,sigma,phase,contrast){
+      var i,j,k,h;
+      var freq = imSize/lamda;
+      var phaseRad = phase * 2 * Math.PI;  
+      var thetaRad = (theta / 180) * Math.PI;
+      var s = sigma / imSize;    
+      cvsA.width=cvsA.height=imSize;
+      datA = ctxA.createImageData(imSize,imSize);
+      for(i=0;i<imSize*4;i+=4)
+        for(j=0;j<imSize*imSize*4;j+=imSize*4) {
+          var i1 = (i-imSize*2)/imSize/4, j1 = (j-imSize*imSize*2)/imSize/imSize/4;
+          k = i1*Math.cos(thetaRad) + j1*Math.sin(thetaRad);
+          h = Math.exp( -(i1*i1+j1*j1)/2/s/s );
+          datA.data[i+j] = datA.data[i+j+1] = datA.data[i+j+2] = 128 + h*128*Math.sin(k*2*Math.PI*freq+phaseRad)*contrast*0.01;
+          datA.data[i+j+3] = 255;
+        }
+      ctxA.putImageData(datA,0,0);
+      div.style.width=div.style.height=imSize+'px';
+      div.style.backgroundImage='url('+cvsA.toDataURL()+')';
+    }
+  </script>
+</head>
+<body onload='run();'>
+
+  <div id="p1"></div> <div id="p2"></div> <div id="p3"></div>  
+  <br/>  
+  <div id="p4"></div> <div id="p5"></div> <div id="p6"></div>
+  <br/>  
+  <div id="p7"></div> <div id="p8"></div> <div id="p9"></div>
+
+  <script>
+    gabor($$('p1'),100,10,-15,10,.25,100);
+    gabor($$('p2'),100,10,0,10,.25,100);
+    gabor($$('p3'),100,10,15,10,.25,100);
+    gabor($$('p4'),100,5,-15,10,.25,100);
+    gabor($$('p5'),100,5,0,10,.25,100);
+    gabor($$('p6'),100,5,15,10,.25,100);
+    gabor($$('p7'),100,3,-15,15,.25,50);
+    gabor($$('p8'),100,3,0,15,.25,50);
+    gabor($$('p9'),100,3,15,15,.25,50);
+  </script>
+  
+</body>
+</html>

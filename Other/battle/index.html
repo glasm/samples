@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<head>
+
+  <title>B a t t l e</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />  
+
+	<style type="text/css">
+	<!--	
+		body { margin:20px; color:#000000; width:800px; }
+		
+		a { color:#22aa22; text-decoration:none }
+		a:hover { color:#006600; }
+		
+		div { display:inline-block; text-align:center; font:11px/12px Tahoma,Verdana; }
+		.duel { margin:5px; border:1px solid #e8e8e8; padding:4px; }
+		.bfl { width:50px; vertical-align:top; overflow:hidden; max-height:120px; }
+		.none { display:none }
+		
+		.mob div { background:url(mob.png); width:64px; height:85px; }
+		.mob .s1 { background-position:-64px 0; }
+		.mob .s2 { background-position:-128px 0; }
+		.mob .s3 { background-position:-192px 0; }
+		
+	-->
+	</style>
+	
+	<script>
+	
+		var level = 0;
+		var mobs = new Array();
+		var battles = new Array();
+		var actions = new Array(['f',1],['f',1.25],['f',1.25],['h',0.25],['h',25],['p',0.25],['p',25],['s',0.25],['s',25],['e',0.25],['e',25]);
+	
+		function run(cnt) {
+		
+			for(var i=0;i<cnt;i++) {
+				mobs[i] = new Mob(i);
+			}
+				
+			setInterval( on_update, 500);
+		
+		}
+
+		function next() {
+		
+			// сохраняем победителей
+			var n = mobs;
+			mobs = new Array();
+			for(var i=0,j=0;i<n.length;i++) {
+				if(n[i].hp > 0) {
+					mobs[j] = n[i];
+					mobs[j].id = j;
+					j++;
+				}
+			}
+		
+			battles = new Array();
+		
+			level++;
+				
+		}
+		
+		function Mob(id) {
+		
+			this.id = id; // номер
+			this.live = true; // статус
+			this.battle = -1; 
+			this.actions = new Array(actions[0]);
+			this.init = rnd(1,100); // инициатива
+			this.hp0 = rnd(1,100);
+			this.hp = this.hp0; // энергия
+			this.st0 = rnd(1,100);
+			this.st = this.st0; // сила
+			this.rt = Math.floor(Math.sqrt(this.hp * this.st) + Math.sqrt(this.init * this.st) / 2); // условный уровень
+			
+		}
+		
+		function Action(type,force) {
+			
+			this.type = type;
+			this.force = force;
+			
+		}
+
+		function Battle(id,p1,p2) {
+		
+			this.id = id;
+			this.dt = rnd(0,4);
+			this.round = 0;
+			this.m1id = mobs[p1].id;
+			this.m2id = mobs[p2].id;
+			
+			mobs[p1].battle = id;
+			mobs[p1].hp = mobs[p1].hp0; // восстанавливаем здоровье
+			mobs[p1].st = mobs[p1].st0; // восстанавливаем силу
+			
+			mobs[p2].battle = id;
+			mobs[p2].hp = mobs[p2].hp0; // восстанавливаем здоровье
+			mobs[p2].st = mobs[p2].st0; // восстанавливаем силу
+			
+		}
+		
+		function initBattle() {
+		
+			var i=0,j=0,k=0;
+			var s='';
+			var parr = new Array();
+
+			// массив ссылок на монстров			
+			for(i=0;i<mobs.length;i++) {
+				parr[i] = i;
+			}
+
+			// перемешиваем массив ссылок
+			for(i=0;i<mobs.length;i++) {
+				j = rnd(0,mobs.length-2);
+				k = parr[j];
+				parr[j] = parr[j+1];
+				parr[j+1] = k;
+			}
+
+			// список дуэлей
+			for(var i=0;i<mobs.length/2;i++) {
+				battles[i] = new Battle(i,parr[i*2],parr[i*2+1]);
+				var m1 = mobs[parr[i*2]];
+				var m2 = mobs[parr[i*2+1]];
+				s += '<div class="duel"><div class="mob"><div id="m_'+m1.id+'" class="s0"></div><br/><span id="p_'+m1.id+'">init: '+m1.init+'<br/>hp: '+m1.hp+'<br/>st: '+m1.st+'</span></div><div class="bfl" id="bfl_'+i+'"></div><div class="mob"><div id="m_'+m2.id+'" class="s0"></div><br/><span id="p_'+m2.id+'">init: '+m2.init+'<br/>hp: '+m2.hp+'<br/>st: '+m2.st+'</span></div></div>';
+			}
+
+			eid('bf').innerHTML = s;
+		
+		}
+		
+		function doAction(id) {
+		
+			var m1 = battles[id].m1id;
+			var m2 = battles[id].m2id;
+			var ebfl = eid('bfl_'+id);
+			var r = (battles[id].round + (mobs[m1].init > mobs[m2].init ? 0 : 1))&1;
+			
+			// текущий метод
+			var a = level - Math.floor(battles[id].round / 2);
+			a = a < 0 ? 0 : a;
+			var act = !r ? mobs[m1].actions[a] : mobs[m2].actions[a];
+			
+			var d;
+			var p1 = !r ? m1 : m2;
+			var p2 = !r ? m2 : m1;
+			switch(act[0]) {
+				case 'f':
+					d = mobs[p1].st * act[1];
+					d = Math.round(d/2 + rnd(0, d/2));
+					mobs[p2].hp -= d;
+					ebfl.innerHTML = (!r ? '' : '‹ ') + d + (!r ? ' ›' : '') + '<br/>' + ebfl.innerHTML;
+					break;
+				case 'h':
+					d = act[1] <= 1 ? Math.round(mobs[p1].hp * act[1]) : act[1];
+					mobs[p1].hp += d;
+					ebfl.innerHTML = (!r ? '‹ ' : '') + '<span style="color:green">' + d + 'hp</span>' + (!r ? '' : ' ›') + '<br/>' + ebfl.innerHTML;
+					break;
+				case 'p':
+					d = act[1] <= 1 ? Math.round(mobs[p2].hp * act[1]) : act[1];
+					mobs[p2].hp -= d;
+					ebfl.innerHTML = (!r ? '' : '‹ ') + '<span style="color:red">' + d + 'hp</span>' + (!r ? ' ›' : '') + '<br/>' + ebfl.innerHTML;
+					break;
+				case 's':
+					d = act[1] <= 1 ? Math.round(mobs[p1].st * act[1]) : act[1];
+					mobs[p1].st += d;
+					ebfl.innerHTML = (!r ? '‹ ' : '') + '<span style="color:green">' + d + 'st</span>' + (!r ? '' : ' ›') + '<br/>' + ebfl.innerHTML;
+					break;
+				case 'e':
+					d = act[1] <= 1 ? Math.round(mobs[p2].st * act[1]) : act[1];
+					mobs[p2].st -= d;
+					if(mobs[p2].st <= 0)
+						mobs[p2].st = 1;
+					ebfl.innerHTML = (!r ? '' : '‹ ') + '<span style="color:red">' + d + 'hp</span>' + (!r ? ' ›' : '') + '<br/>' + ebfl.innerHTML;
+					break;
+			}
+			if(mobs[p2].hp <= 0) {
+				mobs[p1].actions[level+1] = mobs[p1].rt < mobs[p2].rt ? actions[rnd(0,1)*5+1] : actions[rnd(1,10)];
+			}
+			
+			updStat(m1);
+			updStat(m2);
+			
+			battles[id].round++;
+		
+		}
+		
+		function updStat(id) {
+		
+			var h = mobs[id].hp;
+			eid('p_'+id).innerHTML = 'init: '+mobs[id].init+'<br/>hp: '+(h <= 0 ? '<span style="color:red">' : '') + h + (h <= 0 ? '</span>' : '')+'('+mobs[id].hp0+')<br/>st: '+mobs[id].st + '('+mobs[id].st0+')' + '<br/>rate: '+mobs[id].rt;
+		
+		}
+
+		function updDuel(id) {
+		
+			var m1 = battles[id].m1id;
+			var m2 = battles[id].m2id;
+			var em1 = eid('m_'+m1);
+			var em2 = eid('m_'+m2);
+			
+			if(mobs[m1].hp > 0 && mobs[m2].hp > 0) {
+				var r = (battles[id].round + (mobs[m1].init > mobs[m2].init ? 0 : 1))&1;
+				em1.className = 's' + (1-r);
+				em2.className = 's' + r;
+			}else {
+				em1.className = 's'+(mobs[m1].hp > 0 ? 3 : 2);
+				em2.className = 's'+(mobs[m2].hp > 0 ? 3 : 2);
+			}
+		
+		}
+				
+		function on_update() {
+		
+			eid('title').innerHTML = 'Круг: ' + (level+1);
+			
+			if(!battles.length) {
+				initBattle();
+			}
+			
+			var j = 0;
+			for(var i=0;i<battles.length;i++) {
+				if(mobs[battles[i].m1id].hp > 0 && mobs[battles[i].m2id].hp > 0) {
+					if(battles[i].dt == 0) {
+						doAction(i);
+						battles[i].dt = rnd(0,4);
+						//console.log(battles[i].dt);
+					} else {
+						battles[i].dt--;
+					}
+					updDuel(i);
+					j++;
+				}
+			}
+		
+			eid('next').className = battles.length != 1 && !j ? '' : 'none';
+
+		}
+		
+		function eid(s){return document.getElementById(s);}
+		function rnd(c1,c2){return Math.floor(Math.random()*(c2-c1+1)+c1);}
+		
+	</script>		
+	
+</head>
+<body>
+	
+	<div id="title">« С р а ж е н и е »</div> <div id="next" class="none"><a href="javascript:next();"> Следующий круг</a></div><br/><br/>
+	<div id="bf">
+		<a href="javascript:run(8)">Старт [8]</a>, <a href="javascript:run(16)">Старт [16]</a>, <a href="javascript:run(32)">Старт [32]</a>, <a href="javascript:run(64)">Старт [64]</a>, <a href="javascript:run(128)">Старт [128]</a>, <a href="javascript:run(256)">Старт [256]</a>, <a href="javascript:run(1024)">Старт [1024]</a>
+	</div>
+	
+</body>
+</html>

@@ -1,0 +1,12 @@
+AddEncoding gzip .gz
+ <FilesMatch "\.js.gz$">
+  ForceType text/javascript  
+  Header set Content-Encoding: gzip
+
+<FilesMatch "\.js$">
+  RewriteEngine On
+  RewriteCond %{HTTP_USER_AGENT} !".*Safari.*"
+  RewriteCond %{HTTP:Accept-Encoding} gzip
+  RewriteCond %{REQUEST_FILENAME}.gz -f
+  RewriteRule (.*)\.js$ $1\.js.gz [L]
+  ForceType text/javascript

@@ -1,0 +1,26 @@
+<words>
+	<settings
+		textcolor="0x666666"
+		size="25"
+		inrotationspeed="25"
+		outrotationspeed="15"
+		appearscalespeed="15"
+		showdelay="100"
+		staycount="200"
+		gap="-1"
+	/>
+	<word text="This is just a simple text animation." />
+	<word text="Use it in intros to your website." />
+	<word text="Use a single word separately for any purpose." />
+	<word text="Features are changeable just via xml." />
+	<word text="Color can be changed" color="0xAF9375" />
+	<word text="Can have links" color="0x8FAD89" link="http://flashden.net/" target="_blank" />
+	<word text="Size can be changed" size="40" />
+	<word text="This is very small text." size="15" />
+	<word text="Slow inner rotation speed" inrotationspeed="50" />
+	<word text="Slow outer rotation speed" outrotationspeed="40" />
+	<word text="Slow scaling speed" appearscalespeed="50" />
+	<word text="Fast rotation speed" inrotationspeed="5" outrotationspeed="5"/>
+	<word text="Increased gap" gap="10"/>
+	<word text="Decreased gap" gap="-5"/>
+</words>

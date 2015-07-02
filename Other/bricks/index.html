@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title></title>
+  
+  <style>
+    body {
+      background: url(i/back.png);
+    }
+    img {
+      border: 0;
+    }
+  </style>
+
+<script>
+  
+</script>  
+  
+</head>
+
+<body>
+
+  <div id="smpl1"></div>
+  <div id="smpl2"></div>
+
+	<script>
+    
+    var canvas = document.createElement('canvas');
+    if(!!(canvas.getContext && canvas.getContext('2d'))) {
+    
+        canvas.width = 1000;
+        canvas.height = 516;
+        var ctx = canvas.getContext('2d');
+
+        var brick1 = new Image();
+        var brick2 = new Image();
+        var mask = new Image();
+        
+        brick1.src = 'i/sample1.jpg';
+        brick1.onload = function() { brick2.src = 'i/sample2.png'; }
+        brick2.onload = function() { mask.src = 'i/mask.png'; }        
+        mask.onload = function() {
+        
+          ctx.drawImage(mask, 0, 0);
+          ctx.globalCompositeOperation = "source-in";
+          ctx.drawImage(brick1, 0, 0);
+          document.getElementById('smpl1').innerHTML = '<img src="' + canvas.toDataURL() + '" alt="sample1"/>';
+          
+          canvas.width = canvas.width;
+          ctx.drawImage(mask, 0, 0);
+          ctx.globalCompositeOperation = "source-in";
+          ctx.drawImage(brick2, 0, 0);
+          document.getElementById('smpl2').innerHTML = '<img src="' + canvas.toDataURL() + '" alt="sample2"/>';
+          
+        }          
+    }else {
+      document.getElementById('smpl1').innerHTML = '<img src="i/sample1.png" alt="sample1"/>';
+      document.getElementById('smpl2').innerHTML = '<img src="i/sample2.png" alt="sample2"/>';
+    }    
+    
+  </script>
+
+</body>	

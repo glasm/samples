@@ -1,0 +1,16 @@
+<words>
+	<settings
+		textcolor="0x666666"
+		size="25"
+		inrotationspeed="25"
+		outrotationspeed="15"
+		appearscalespeed="15"
+		showdelay="100"
+		staycount="200"
+		gap="-1"
+	/>
+	<word text="This is just a simple text animation 50_1." appearscalespeed="50" />
+	<word text="Use it in intros to your website 5_1." appearscalespeed="5" />
+	<word text="This is just a simple text animation 50_2." appearscalespeed="50" />
+	<word text="Use it in intros to your website 5_2." appearscalespeed="5" />
+</words>

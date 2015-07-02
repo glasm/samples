@@ -1,0 +1,46 @@
+<html>
+<head>
+	<title>hex</title>
+	<style type="text/css">
+	<!--
+		body { font-size:18px; }
+		#map polygon { cursor:hand; }
+		#map text { cursor:hand; text-anchor: middle; -moz-user-select: -moz-none; -o-user-select: none; -khtml-user-select: none; -webkit-user-select: none; user-select: none; }
+	-->
+	</style>		
+</head>
+<body>
+	
+	<div id="map"></div>	
+	<script>
+	
+		var iarr = {};
+		var carr = [];
+		var s = '';
+		
+		for(var i=0;i<14;i++)
+			for(var j=0;j<10;j++) {
+				var id = '_' + i + '_' + j;
+				var x = i*52;
+				var y = j*64 + i%2 * 32;
+				s += '<polygon id="p'+id+'" points="'+x+','+(y+26)+' '+(x+15)+','+y+' '+(x+45)+','+y+' '+(x+60)+','+(y+26)+' '+(x+45)+','+(y+52)+' '+(x+15)+','+(y+52)+'" style="fill:transparent; stroke:silver; stroke-width:1" onclick="on_click(this)"/>';
+				s += '<text id="t'+id+'" x="'+(x+30)+'" y="'+(y+32)+'" onclick="on_click(this)">0</text>';
+				iarr[id] = 0;
+			}
+		for(var i=1;i<100;i++)
+			carr[i] = '#' + col() + col() + col();
+		
+		eid('map').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">' + s + '</svg>';
+		
+		function on_click(e) {
+			var id = e.id.substr(1);
+			eid('t'+id).textContent = ++iarr[id];
+			eid('p'+id).style.fill = carr[iarr[id]];
+		}
+		function eid(s){return document.getElementById(s);}
+		function col(s){return (128+Math.floor(Math.random()*127)).toString(16);}
+		
+	</script>
+
+</body>
+</html>
